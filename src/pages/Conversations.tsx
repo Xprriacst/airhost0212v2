@@ -89,4 +89,4 @@ const Conversations: React.FC = () => {
   );
 };
 
-export default Conversa
+export default Conversations;

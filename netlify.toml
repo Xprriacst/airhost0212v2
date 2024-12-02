@@ -9,6 +9,7 @@
   status = 200
 
 [functions]
-  included_files = ["src/services/**"]
-included_files = ["shared/**"]
-
+  included_files = [
+    "src/services/**",
+    "shared/**"
+  ]

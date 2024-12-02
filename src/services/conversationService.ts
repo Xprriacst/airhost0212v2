@@ -1,7 +1,6 @@
-
 import Airtable from 'airtable';
 
-// Securely fetching API key and Base ID
+// Assurez-vous que vos variables d'environnement sont correctement définies
 const apiKey = process.env.VITE_AIRTABLE_API_KEY || '';
 const baseId = process.env.VITE_AIRTABLE_BASE_ID || '';
 
@@ -13,6 +12,11 @@ if (!apiKey || !baseId) {
 const base = new Airtable({ apiKey }).base(baseId);
 
 export const conversationService = {
+  /**
+   * Récupère les conversations associées à une propriété
+   * @param propertyId - L'ID (Record ID) de la propriété
+   * @returns Une liste de conversations
+   */
   async fetchConversations(propertyId: string) {
     try {
       console.log(`Fetching conversations for property ID: ${propertyId}`);
@@ -21,10 +25,14 @@ export const conversationService = {
           filterByFormula: `{Property} = '${propertyId}'`,
         })
         .all();
+
+      console.log('Conversations received from Airtable:', records);
+
       return records.map((record) => ({
         id: record.id,
         propertyId: propertyId,
         guestName: record.get('Guest Name') || '',
+        guestEmail: record.get('Guest Email') || '',
         checkIn: record.get('Check-in Date') || '',
         checkOut: record.get('Check-out Date') || '',
         messages: JSON.parse(record.get('Messages') || '[]'),
@@ -36,10 +44,20 @@ export const conversationService = {
     }
   },
 
+  /**
+   * Ajoute une nouvelle conversation dans Airtable
+   * @param conversationData - Les données de la conversation
+   * @returns La conversation ajoutée
+   */
   async addConversation(conversationData: Record<string, any>) {
     try {
-      console.log('Adding a new conversation to Airtable...');
-      const createdRecord = await base('Conversations').create(conversationData);
+      console.log('Adding a new conversation to Airtable:', conversationData);
+      const createdRecord = await base('Conversations').create({
+        fields: conversationData,
+      });
+
+      console.log('Conversation added successfully:', createdRecord);
+
       return {
         id: createdRecord.id,
         ...createdRecord.fields,
@@ -50,13 +68,19 @@ export const conversationService = {
     }
   },
 
+  /**
+   * Supprime une conversation dans Airtable
+   * @param conversationId - L'ID (Record ID) de la conversation
+   * @returns Un objet avec un statut de succès
+   */
   async deleteConversation(conversationId: string) {
     try {
       console.log(`Deleting conversation with ID: ${conversationId}`);
       await base('Conversations').destroy(conversationId);
+      console.log(`Conversation with ID ${conversationId} deleted successfully.`);
       return { success: true };
     } catch (error) {
-      console.error('Error deleting conversation:', error);
+      console.error('Error deleting conversation from Airtable:', error);
       throw new Error('Failed to delete conversation.');
     }
   },

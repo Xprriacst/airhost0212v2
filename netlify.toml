@@ -1,15 +1,13 @@
 [build]
-  command = "npm run build" # Commande pour construire votre projet
-  publish = "dist"          # Dossier contenant le résultat de la construction
-  functions = "netlify/functions" # Dossier contenant les Netlify Functions
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
 
 [[redirects]]
-  from = "/*"               # Redirige toutes les requêtes vers index.html
+  from = "/*"
   to = "/index.html"
   status = 200
 
 [functions]
-  directory = "netlify/functions" # Chemin vers les fonctions serverless
+  included_files = ["src/services/**"]
 
-[build.environment]
-  NODE_VERSION = "18"            # Version de Node.js utilisée pour le build

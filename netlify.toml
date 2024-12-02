@@ -10,4 +10,5 @@
 
 [functions]
   included_files = ["src/services/**"]
+included_files = ["shared/**"]
 

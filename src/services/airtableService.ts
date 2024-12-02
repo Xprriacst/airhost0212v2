@@ -1,4 +1,3 @@
-
 import Airtable from 'airtable';
 import type { Property } from '../types';
 import { handleServiceError } from '../utils/error';
@@ -22,9 +21,9 @@ const mapRecordToProperty = (record: any): Property => ({
   accessCodes: {
     wifi: {
       name: record.get('WiFi Name') || '',
-      password: record.get('WiFi Password') || ''
+      password: record.get('WiFi Password') || '',
     },
-    door: record.get('Door Code') || ''
+    door: record.get('Door Code') || '',
   },
   houseRules: record.get('House Rules') || [],
   amenities: record.get('Amenities') || [],
@@ -36,10 +35,13 @@ const mapRecordToProperty = (record: any): Property => ({
   parkingInfo: record.get('Parking Info') || '',
   restaurants: record.get('Restaurants') || [],
   fastFood: record.get('Fast Food') || [],
-  emergencyContacts: record.get('Emergency Contacts') || []
+  emergencyContacts: record.get('Emergency Contacts') || [],
 });
 
 export const airtableService = {
+  /**
+   * Fetch all properties from Airtable
+   */
   async getProperties(): Promise<Property[]> {
     try {
       console.log('Fetching properties from Airtable...');
@@ -53,10 +55,17 @@ export const airtableService = {
     }
   },
 
+  /**
+   * Add a new property to Airtable
+   * @param propertyData - Data for the new property
+   * @returns The created property object
+   */
   async addProperty(propertyData: Record<string, any>): Promise<Property | null> {
     try {
       console.log('Adding a property to Airtable...');
-      const createdRecord = await base('Properties').create(propertyData);
+      const createdRecord = await base('Properties').create({
+        fields: propertyData,
+      });
       return mapRecordToProperty(createdRecord);
     } catch (error) {
       console.error('Error adding property to Airtable:', error);
@@ -64,6 +73,11 @@ export const airtableService = {
     }
   },
 
+  /**
+   * Delete a property from Airtable
+   * @param id - The Record ID of the property
+   * @returns Success status
+   */
   async deleteProperty(id: string): Promise<{ success: boolean }> {
     try {
       console.log(`Deleting property with ID: ${id}`);
@@ -73,5 +87,5 @@ export const airtableService = {
       console.error('Error deleting property from Airtable:', error);
       return handleServiceError(error, 'Airtable.deleteProperty');
     }
-  }
+  },
 };

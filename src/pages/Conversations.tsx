@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
-import { conversationService } from '../services/conversationService';
+import { conversationService } from '../../shared/conversationService';
+
 
 const Conversations: React.FC = () => {
   const navigate = useNavigate();

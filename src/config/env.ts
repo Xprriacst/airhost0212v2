@@ -1,36 +1,41 @@
+
 import { z } from 'zod';
 
+// Schema validation for environment variables
 const envSchema = z.object({
-  openai: z.object({
-    apiKey: z.string().min(1, 'OpenAI API key is required'),
-  }),
   airtable: z.object({
     apiKey: z.string().min(1, 'Airtable API key is required'),
     baseId: z.string().min(1, 'Airtable Base ID is required'),
   }),
+  openai: z.object({
+    apiKey: z.string().min(1, 'OpenAI API key is required').optional(),
+  }),
   make: z.object({
-    webhookUrl: z.string().url('Make webhook URL must be a valid URL'),
-    webhookSecret: z.string().min(1, 'Make webhook secret is required'),
+    webhookUrl: z.string().url('Make webhook URL must be a valid URL').optional(),
+    webhookSecret: z.string().min(1, 'Make webhook secret is required').optional(),
   }),
 });
 
+// Environment variables object
 export const env = {
-  openai: {
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  },
   airtable: {
-    apiKey: import.meta.env.VITE_AIRTABLE_API_KEY,
-    baseId: import.meta.env.VITE_AIRTABLE_BASE_ID,
+    apiKey: process.env.VITE_AIRTABLE_API_KEY || '',
+    baseId: process.env.VITE_AIRTABLE_BASE_ID || '',
+  },
+  openai: {
+    apiKey: process.env.VITE_OPENAI_API_KEY || null,
   },
   make: {
-    webhookUrl: import.meta.env.VITE_MAKE_WEBHOOK_URL,
-    webhookSecret: import.meta.env.MAKE_WEBHOOK_SECRET,
+    webhookUrl: process.env.VITE_MAKE_WEBHOOK_URL || null,
+    webhookSecret: process.env.VITE_MAKE_WEBHOOK_SECRET || null,
   },
 };
 
+// Validate the environment configuration
 const validateEnv = () => {
   try {
     envSchema.parse(env);
+    console.log('Environment configuration validated successfully.');
   } catch (error) {
     console.error('Environment validation failed:', error);
     throw error;

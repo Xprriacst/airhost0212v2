@@ -1,4 +1,3 @@
-
 import Airtable from 'airtable';
 
 // Securely fetching API key and Base ID
@@ -23,7 +22,7 @@ export const conversationService = {
       console.log(`Fetching conversations for property ID: ${propertyId}`);
       const records = await base('Conversations')
         .select({
-          filterByFormula: `{Property} = '${propertyId}'`,
+          filterByFormula: `{Properties} = '${propertyId}'`, // Corrected field name
         })
         .all();
 
@@ -37,10 +36,13 @@ export const conversationService = {
         checkIn: record.get('Check-in Date') || '',
         checkOut: record.get('Check-out Date') || '',
         messages: (() => {
+          const rawMessages = record.get('Messages');
           try {
-            return JSON.parse(record.get('Messages') || '[]');
-          } catch (err) {
-            console.warn(`Invalid JSON in Messages for record ${record.id}:`, err);
+            return typeof rawMessages === 'string'
+              ? [{ text: rawMessages }]
+              : JSON.parse(rawMessages || '[]');
+          } catch {
+            console.warn(`Invalid Messages format for record ${record.id}`);
             return [];
           }
         })(),
@@ -48,7 +50,7 @@ export const conversationService = {
       }));
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      throw new Error('Failed to fetch conversations. Ensure the Property column in Airtable is correctly linked and the ID is valid.');
+      throw new Error('Failed to fetch conversations. Ensure the Properties column in Airtable is correctly linked and the ID is valid.');
     }
   },
 

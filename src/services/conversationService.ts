@@ -94,4 +94,81 @@ export const conversationService = {
       throw new Error('Failed to delete conversation. Ensure the ID is correct.');
     }
   },
+
+  /**
+   * Find or create a conversation for a given property and guest
+   * @param propertyId - The Record ID of the property
+   * @param guestName - Name of the guest
+   * @param guestEmail - Email of the guest
+   * @returns The existing or newly created conversation
+   */
+  async findOrCreateConversation({
+    propertyId,
+    guestName,
+    guestEmail,
+  }: {
+    propertyId: string;
+    guestName: string;
+    guestEmail?: string;
+  }) {
+    try {
+      console.log(`Finding conversation for property ID: ${propertyId}`);
+      const records = await base('Conversations')
+        .select({
+          filterByFormula: `{Properties} = '${propertyId}' AND {Guest Name} = '${guestName}'`,
+        })
+        .all();
+
+      if (records.length > 0) {
+        console.log('Conversation found:', records[0].id);
+        return records[0];
+      }
+
+      console.log('No conversation found. Creating a new one.');
+      const newConversation = await base('Conversations').create({
+        fields: {
+          Properties: [propertyId],
+          'Guest Name': guestName,
+          'Guest Email': guestEmail || '',
+          Messages: JSON.stringify([]),
+        },
+      });
+
+      return newConversation;
+    } catch (error) {
+      console.error('Error finding or creating conversation:', error);
+      throw new Error('Failed to find or create conversation.');
+    }
+  },
+
+  /**
+   * Add a message to an existing conversation
+   * @param conversationId - The Record ID of the conversation
+   * @param message - The message to add
+   * @returns The updated conversation
+   */
+  async addMessageToConversation(conversationId: string, message: string) {
+    try {
+      const record = await base('Conversations').find(conversationId);
+      const existingMessages = JSON.parse(record.get('Messages') || '[]');
+
+      const newMessage = {
+        id: String(existingMessages.length + 1),
+        text: message,
+        timestamp: new Date().toISOString(),
+      };
+
+      const updatedMessages = [...existingMessages, newMessage];
+
+      const updatedRecord = await base('Conversations').update(conversationId, {
+        Messages: JSON.stringify(updatedMessages),
+      });
+
+      console.log('Message added to conversation:', updatedRecord.id);
+      return updatedRecord;
+    } catch (error) {
+      console.error('Error adding message to conversation:', error);
+      throw new Error('Failed to add message to conversation.');
+    }
+  },
 };

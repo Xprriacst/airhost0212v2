@@ -1,5 +1,5 @@
-const { conversationService } = require('../../src/services/conversationService');
- // Assurez-vous que le chemin est correct
+const { conversationService } = require('../../shared/conversationService');
+ // Assurz-vous que le chemin est correct
 
 exports.handler = async (event) => {
   try {
